@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="#1E40AF" />
+  <circle cx="256" cy="256" r="220" fill="#1E3A8A" />
+  
+  <!-- Hotel Building -->
+  <path d="M170 140V380H342V140H170Z" fill="#FFFFFF" />
+  
+  <!-- Windows -->
+  <rect x="190" y="170" width="30" height="30" fill="#3B82F6" />
+  <rect x="240" y="170" width="30" height="30" fill="#3B82F6" />
+  <rect x="290" y="170" width="30" height="30" fill="#3B82F6" />
+  
+  <rect x="190" y="220" width="30" height="30" fill="#3B82F6" />
+  <rect x="240" y="220" width="30" height="30" fill="#3B82F6" />
+  <rect x="290" y="220" width="30" height="30" fill="#3B82F6" />
+  
+  <rect x="190" y="270" width="30" height="30" fill="#3B82F6" />
+  <rect x="240" y="270" width="30" height="30" fill="#3B82F6" />
+  <rect x="290" y="270" width="30" height="30" fill="#3B82F6" />
+  
+  <!-- Door -->
+  <rect x="240" y="320" width="30" height="60" fill="#3B82F6" />
+  
+  <!-- Roof -->
+  <path d="M150 140L256 80L362 140H150Z" fill="#FBBF24" />
+  
+  <!-- Bed Symbol -->
+  <path d="M210 350H300C305.523 350 310 345.523 310 340V330C310 324.477 305.523 320 300 320H210C204.477 320 200 324.477 200 330V340C200 345.523 204.477 350 210 350Z" fill="#FBBF24" />
+  <rect x="190" y="350" width="130" height="10" rx="5" fill="#FBBF24" />
+  
+  <!-- Stars -->
+  <path d="M160 120L163.511 130.49H174.486L165.488 137.02L169 147.51L160 140.98L151 147.51L154.512 137.02L145.514 130.49H156.489L160 120Z" fill="#FBBF24" />
+  <path d="M190 110L193.511 120.49H204.486L195.488 127.02L199 137.51L190 130.98L181 137.51L184.512 127.02L175.514 120.49H186.489L190 110Z" fill="#FBBF24" />
+  <path d="M220 100L223.511 110.49H234.486L225.488 117.02L229 127.51L220 120.98L211 127.51L214.512 117.02L205.514 110.49H216.489L220 100Z" fill="#FBBF24" />
+  <path d="M250 95L253.511 105.49H264.486L255.488 112.02L259 122.51L250 115.98L241 122.51L244.512 112.02L235.514 105.49H246.489L250 95Z" fill="#FBBF24" />
+  <path d="M280 100L283.511 110.49H294.486L285.488 117.02L289 127.51L280 120.98L271 127.51L274.512 117.02L265.514 110.49H276.489L280 100Z" fill="#FBBF24" />
+  <path d="M310 110L313.511 120.49H324.486L315.488 127.02L319 137.51L310 130.98L301 137.51L304.512 127.02L295.514 120.49H306.489L310 110Z" fill="#FBBF24" />
+  <path d="M340 120L343.511 130.49H354.486L345.488 137.02L349 147.51L340 140.98L331 147.51L334.512 137.02L325.514 130.49H336.489L340 120Z" fill="#FBBF24" />
+  
+  <!-- Text Circle -->
+  <circle cx="256" cy="256" r="180" stroke="#FBBF24" stroke-width="4" stroke-dasharray="12 6" />
+</svg>
