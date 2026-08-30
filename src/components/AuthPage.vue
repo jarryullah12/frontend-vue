@@ -5,7 +5,7 @@ import { useAuth } from '../composables/useAuth'
 
 const emit = defineEmits(['navigate'])
 
-const { signIn, signUp, profile } = useAuth()
+const { signIn, signUp, user, profile, isAuthenticated } = useAuth()
 
 const mode = ref('login')
 const email = ref('')
@@ -14,7 +14,9 @@ const fullName = ref('')
 const error = ref('')
 const loading = ref(false)
 
-const isAdmin = computed(() => profile.value?.is_admin === true)
+const isAdmin = computed(() => {
+  return profile.value?.is_admin === true
+})
 
 const handleSubmit = async () => {
   error.value = ''
@@ -24,8 +26,8 @@ const handleSubmit = async () => {
     if (mode.value === 'login') {
       await signIn(email.value, password.value)
 
-      // Admin ko Admin Panel par bhejein
-      if (profile.value?.is_admin === true) {
+      // Admin login ke baad directly Admin Panel
+      if (isAdmin.value) {
         emit('navigate', 'admin')
       } else {
         emit('navigate', 'home')
@@ -53,25 +55,26 @@ const switchMode = () => {
 
       <!-- Logo -->
       <div class="text-center mb-12">
-        <a
-          href="#"
-          @click.prevent="emit('navigate', 'home')"
+        <button
+          @click="emit('navigate', 'home')"
           class="font-display text-3xl tracking-[0.15em] text-ink-50 cursor-hover"
         >
           MAISON
-        </a>
+        </button>
 
         <p class="font-sans text-xs tracking-[0.3em] uppercase text-accent-400 mt-4">
           {{ mode === 'login' ? 'Welcome Back' : 'Create Account' }}
         </p>
       </div>
 
-      <!-- Login / Signup Form -->
+      <!-- Login / Signup -->
       <form @submit.prevent="handleSubmit" class="space-y-5">
 
         <!-- Full Name -->
         <div v-if="mode === 'signup'">
-          <label class="font-sans text-[10px] tracking-[0.2em] uppercase text-ink-400 block mb-2">
+          <label
+            class="font-sans text-[10px] tracking-[0.2em] uppercase text-ink-400 block mb-2"
+          >
             Full Name
           </label>
 
@@ -85,7 +88,9 @@ const switchMode = () => {
 
         <!-- Email -->
         <div>
-          <label class="font-sans text-[10px] tracking-[0.2em] uppercase text-ink-400 block mb-2">
+          <label
+            class="font-sans text-[10px] tracking-[0.2em] uppercase text-ink-400 block mb-2"
+          >
             Email
           </label>
 
@@ -93,13 +98,16 @@ const switchMode = () => {
             v-model="email"
             type="email"
             required
+            autocomplete="email"
             class="w-full bg-ink-900 border border-ink-700 text-ink-50 font-sans text-sm px-4 py-3.5 focus:outline-none focus:border-accent-500 transition-colors"
           />
         </div>
 
         <!-- Password -->
         <div>
-          <label class="font-sans text-[10px] tracking-[0.2em] uppercase text-ink-400 block mb-2">
+          <label
+            class="font-sans text-[10px] tracking-[0.2em] uppercase text-ink-400 block mb-2"
+          >
             Password
           </label>
 
@@ -108,6 +116,7 @@ const switchMode = () => {
             type="password"
             required
             minlength="6"
+            autocomplete="current-password"
             class="w-full bg-ink-900 border border-ink-700 text-ink-50 font-sans text-sm px-4 py-3.5 focus:outline-none focus:border-accent-500 transition-colors"
           />
         </div>
@@ -130,7 +139,9 @@ const switchMode = () => {
             {{
               loading
                 ? 'Please wait...'
-                : (mode === 'login' ? 'Sign In' : 'Create Account')
+                : mode === 'login'
+                  ? 'Sign In'
+                  : 'Create Account'
             }}
           </span>
 
@@ -154,26 +165,21 @@ const switchMode = () => {
 
       <!-- ADMIN PANEL LINK -->
       <div
-        v-if="mode === 'login' && isAdmin"
-        class="mt-6 text-center"
+        v-if="mode === 'login'"
+        class="mt-8 pt-6 border-t border-ink-800 text-center"
       >
-        <button
-          @click="emit('navigate', 'admin')"
-          class="inline-flex items-center gap-2 px-5 py-3 border border-accent-500 text-accent-400 font-sans text-xs tracking-[0.2em] uppercase cursor-hover hover:bg-accent-500 hover:text-ink-950 transition-all duration-300"
-        >
-          Admin Panel
-          <span>→</span>
-        </button>
+      
       </div>
 
-  
- <button
-        v-if="mode === 'login'"
-        @click="emit('navigate', 'admin')"
-        class="block mx-auto mt-6 font-sans text-xs tracking-[0.2em] uppercase text-accent-400 hover:text-accent-300 transition-colors cursor-hover"
+      <!-- Back to Store -->
+      <button
+        @click="emit('navigate', 'home')"
+        class="block mx-auto mt-6 font-sans text-xs tracking-[0.2em] uppercase text-ink-500 hover:text-ink-300 transition-colors cursor-hover"
       >
-        Admin Panel
+        Back to Store
       </button>
+
     </div>
   </section>
 </template>
+

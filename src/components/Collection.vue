@@ -61,7 +61,7 @@ const fakeCollection = [
     price: 210,
     tag: 'Essential',
     image:
-      'https://images.unsplash.com/photo-1506629905607-d9e4e7a7a1c8?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=80',
     category: 'collection',
     sort_order: 5,
   },

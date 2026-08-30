@@ -1,3 +1,4 @@
+
 import { ref, computed } from 'vue'
 
 const user = ref(
@@ -14,14 +15,52 @@ const isAuthenticated = computed(() => !!user.value)
 
 const isAdmin = computed(() => profile.value?.is_admin === true)
 
+// Create demo admin account automatically
+function ensureAdminUser() {
+  const users = JSON.parse(
+    localStorage.getItem('mason_users') || '[]'
+  )
+
+  const adminEmail = 'admin@maison.com'
+
+  const adminExists = users.some(
+    (u) => u.email?.toLowerCase() === adminEmail.toLowerCase()
+  )
+
+  if (!adminExists) {
+    const adminUser = {
+      id: crypto.randomUUID(),
+      email: adminEmail,
+      password: 'admin123',
+      full_name: 'Maison Admin',
+      is_admin: true,
+    }
+
+    users.push(adminUser)
+
+    localStorage.setItem(
+      'mason_users',
+      JSON.stringify(users)
+    )
+  }
+}
+
 async function init() {
   loading.value = true
+
+  // Make sure admin account exists
+  ensureAdminUser()
 
   const savedUser = localStorage.getItem('mason_user')
   const savedProfile = localStorage.getItem('mason_profile')
 
-  user.value = savedUser ? JSON.parse(savedUser) : null
-  profile.value = savedProfile ? JSON.parse(savedProfile) : null
+  user.value = savedUser
+    ? JSON.parse(savedUser)
+    : null
+
+  profile.value = savedProfile
+    ? JSON.parse(savedProfile)
+    : null
 
   loading.value = false
 }
@@ -31,23 +70,30 @@ async function signUp(email, password, fullName) {
     localStorage.getItem('mason_users') || '[]'
   )
 
-  const existingUser = users.find((u) => u.email === email)
+  const existingUser = users.find(
+    (u) => u.email?.toLowerCase() === email.toLowerCase()
+  )
 
   if (existingUser) {
-    throw new Error('An account with this email already exists.')
+    throw new Error(
+      'An account with this email already exists.'
+    )
   }
 
   const newUser = {
     id: crypto.randomUUID(),
-    email,
+    email: email.trim(),
     password,
-    full_name: fullName || '',
+    full_name: fullName?.trim() || '',
     is_admin: false,
   }
 
   users.push(newUser)
 
-  localStorage.setItem('mason_users', JSON.stringify(users))
+  localStorage.setItem(
+    'mason_users',
+    JSON.stringify(users)
+  )
 
   user.value = {
     id: newUser.id,
@@ -61,8 +107,15 @@ async function signUp(email, password, fullName) {
     is_admin: false,
   }
 
-  localStorage.setItem('mason_user', JSON.stringify(user.value))
-  localStorage.setItem('mason_profile', JSON.stringify(profile.value))
+  localStorage.setItem(
+    'mason_user',
+    JSON.stringify(user.value)
+  )
+
+  localStorage.setItem(
+    'mason_profile',
+    JSON.stringify(profile.value)
+  )
 
   return {
     user: user.value,
@@ -71,12 +124,19 @@ async function signUp(email, password, fullName) {
 }
 
 async function signIn(email, password) {
+  // Make sure admin account exists
+  ensureAdminUser()
+
   const users = JSON.parse(
     localStorage.getItem('mason_users') || '[]'
   )
 
+  const loginEmail = email.trim().toLowerCase()
+
   const foundUser = users.find(
-    (u) => u.email === email && u.password === password
+    (u) =>
+      u.email?.trim().toLowerCase() === loginEmail &&
+      u.password === password
   )
 
   if (!foundUser) {
@@ -91,12 +151,19 @@ async function signIn(email, password) {
   profile.value = {
     id: foundUser.id,
     email: foundUser.email,
-    full_name: foundUser.full_name,
-    is_admin: foundUser.is_admin || false,
+    full_name: foundUser.full_name || '',
+    is_admin: foundUser.is_admin === true,
   }
 
-  localStorage.setItem('mason_user', JSON.stringify(user.value))
-  localStorage.setItem('mason_profile', JSON.stringify(profile.value))
+  localStorage.setItem(
+    'mason_user',
+    JSON.stringify(user.value)
+  )
+
+  localStorage.setItem(
+    'mason_profile',
+    JSON.stringify(profile.value)
+  )
 
   return {
     user: user.value,
