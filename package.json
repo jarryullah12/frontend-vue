@@ -8,7 +8,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.112.4",
     "gsap": "^3.12.5",
     "vue": "^3.4.0"
   },
