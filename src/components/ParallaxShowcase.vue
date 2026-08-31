@@ -8,25 +8,31 @@ gsap.registerPlugin(ScrollTrigger)
 const showcaseRef = ref(null)
 
 const currentFrame = ref(0)
+
 let scrollTrigger = null
+let lastScrollProgress = 0
 
 /*
 |--------------------------------------------------------------------------
 | FRAME IMAGES
 |--------------------------------------------------------------------------
+| IMPORTANT:
+| Images public/frames/ folder mein hain.
+| URL mein "public" nahi likhna hai.
+|--------------------------------------------------------------------------
 */
 
 const frames = [
-  '/video-frames/frames/frames%20%281%29.jfif',
-  '/video-frames/frames/frames%20%282%29.jfif',
-  '/video-frames/frames/frames%20%283%29.jfif',
-  '/video-frames/frames/frames%20%284%29.jfif',
-  '/video-frames/frames/frames%20%285%29.jfif',
+  '/frames/frame1.jpg',
+  '/frames/frame2.jpg',
+  '/frames/frame3.jpg',
+  '/frames/frame4.jpg',
+  '/frames/frame5.jpg',
 ]
 
 /*
 |--------------------------------------------------------------------------
-| Mouse Hover → ONLY ONE NEXT FRAME
+| Mouse Hover → ONE NEXT FRAME
 |--------------------------------------------------------------------------
 */
 
@@ -63,6 +69,26 @@ const scrollToSection = (sectionId) => {
 
 onMounted(async () => {
   await nextTick()
+
+  /*
+  |--------------------------------------------------------------------------
+  | Check images
+  |--------------------------------------------------------------------------
+  */
+
+  frames.forEach((src) => {
+    const img = new Image()
+
+    img.onload = () => {
+      console.log('Image loaded:', src)
+    }
+
+    img.onerror = () => {
+      console.error('Image NOT found:', src)
+    }
+
+    img.src = src
+  })
 
   const ctx = gsap.context(() => {
 
@@ -118,7 +144,7 @@ onMounted(async () => {
 
     /*
     |--------------------------------------------------------------------------
-    | Scroll → ONE FRAME AT A TIME
+    | Scroll → Change Frame
     |--------------------------------------------------------------------------
     */
 
@@ -133,18 +159,23 @@ onMounted(async () => {
 
       pinSpacing: true,
 
-      scrub: 1,
+      scrub: false,
 
       anticipatePin: 1,
 
       onUpdate: (self) => {
+        const progress = self.progress
 
         const frameIndex = Math.min(
           frames.length - 1,
-          Math.floor(self.progress * frames.length)
+          Math.floor(progress * frames.length)
         )
 
-        currentFrame.value = frameIndex
+        if (frameIndex !== currentFrame.value) {
+          currentFrame.value = frameIndex
+        }
+
+        lastScrollProgress = progress
       },
     })
 
@@ -170,6 +201,10 @@ onUnmounted(() => {
     scrollTrigger.kill()
     scrollTrigger = null
   }
+
+  ScrollTrigger.getAll().forEach((trigger) => {
+    trigger.kill()
+  })
 })
 </script>
 
@@ -337,7 +372,9 @@ onUnmounted(() => {
       class="absolute bottom-10 right-6 md:right-12 z-30 hidden md:block"
     >
 
-      <p class="font-serif italic text-ink-300 text-sm">
+      <p
+        class="font-serif italic text-ink-300 text-sm"
+      >
         N° 02 — Maison
       </p>
 
