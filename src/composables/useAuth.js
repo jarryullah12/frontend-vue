@@ -1,4 +1,3 @@
-
 import { ref, computed } from 'vue'
 
 const user = ref(
@@ -15,41 +14,112 @@ const isAuthenticated = computed(() => !!user.value)
 
 const isAdmin = computed(() => profile.value?.is_admin === true)
 
-// Create demo admin account automatically
-function ensureAdminUser() {
+/*
+|--------------------------------------------------------------------------
+| Default Accounts
+|--------------------------------------------------------------------------
+*/
+
+const ADMIN_EMAIL = 'jarryullah46@gmail.com'
+const ADMIN_PASSWORD = '123456'
+
+const USER_EMAIL = 'hamza46@gmail.com'
+const USER_PASSWORD = '123456'
+
+/*
+|--------------------------------------------------------------------------
+| Create Default Accounts
+|--------------------------------------------------------------------------
+*/
+
+function ensureDefaultUsers() {
   const users = JSON.parse(
     localStorage.getItem('mason_users') || '[]'
   )
 
-  const adminEmail = 'admin@maison.com'
+  /*
+  |--------------------------------------------------------------------------
+  | Admin Account
+  |--------------------------------------------------------------------------
+  */
 
-  const adminExists = users.some(
-    (u) => u.email?.toLowerCase() === adminEmail.toLowerCase()
+  const adminIndex = users.findIndex(
+    (u) =>
+      u.email?.trim().toLowerCase() ===
+      ADMIN_EMAIL.toLowerCase()
   )
 
-  if (!adminExists) {
-    const adminUser = {
-      id: crypto.randomUUID(),
-      email: adminEmail,
-      password: 'admin123',
-      full_name: 'Maison Admin',
-      is_admin: true,
-    }
+  const adminUser = {
+    id:
+      adminIndex !== -1
+        ? users[adminIndex].id
+        : crypto.randomUUID(),
 
-    users.push(adminUser)
-
-    localStorage.setItem(
-      'mason_users',
-      JSON.stringify(users)
-    )
+    email: ADMIN_EMAIL,
+    password: ADMIN_PASSWORD,
+    full_name: 'Maison Admin',
+    is_admin: true,
   }
+
+  if (adminIndex !== -1) {
+    users[adminIndex] = {
+      ...users[adminIndex],
+      ...adminUser,
+    }
+  } else {
+    users.push(adminUser)
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Normal User Account
+  |--------------------------------------------------------------------------
+  */
+
+  const userIndex = users.findIndex(
+    (u) =>
+      u.email?.trim().toLowerCase() ===
+      USER_EMAIL.toLowerCase()
+  )
+
+  const normalUser = {
+    id:
+      userIndex !== -1
+        ? users[userIndex].id
+        : crypto.randomUUID(),
+
+    email: USER_EMAIL,
+    password: USER_PASSWORD,
+    full_name: 'Maison User',
+    is_admin: false,
+  }
+
+  if (userIndex !== -1) {
+    users[userIndex] = {
+      ...users[userIndex],
+      ...normalUser,
+    }
+  } else {
+    users.push(normalUser)
+  }
+
+  localStorage.setItem(
+    'mason_users',
+    JSON.stringify(users)
+  )
 }
+
+/*
+|--------------------------------------------------------------------------
+| Init
+|--------------------------------------------------------------------------
+*/
 
 async function init() {
   loading.value = true
 
-  // Make sure admin account exists
-  ensureAdminUser()
+  // Default Admin + User accounts create/update
+  ensureDefaultUsers()
 
   const savedUser = localStorage.getItem('mason_user')
   const savedProfile = localStorage.getItem('mason_profile')
@@ -65,13 +135,22 @@ async function init() {
   loading.value = false
 }
 
+/*
+|--------------------------------------------------------------------------
+| Sign Up
+|--------------------------------------------------------------------------
+*/
+
 async function signUp(email, password, fullName) {
   const users = JSON.parse(
     localStorage.getItem('mason_users') || '[]'
   )
 
+  const cleanEmail = email.trim().toLowerCase()
+
   const existingUser = users.find(
-    (u) => u.email?.toLowerCase() === email.toLowerCase()
+    (u) =>
+      u.email?.trim().toLowerCase() === cleanEmail
   )
 
   if (existingUser) {
@@ -123,9 +202,15 @@ async function signUp(email, password, fullName) {
   }
 }
 
+/*
+|--------------------------------------------------------------------------
+| Sign In
+|--------------------------------------------------------------------------
+*/
+
 async function signIn(email, password) {
-  // Make sure admin account exists
-  ensureAdminUser()
+  // Make sure default accounts exist
+  ensureDefaultUsers()
 
   const users = JSON.parse(
     localStorage.getItem('mason_users') || '[]'
@@ -140,7 +225,9 @@ async function signIn(email, password) {
   )
 
   if (!foundUser) {
-    throw new Error('Invalid email or password.')
+    throw new Error(
+      'Invalid email or password.'
+    )
   }
 
   user.value = {
@@ -171,6 +258,12 @@ async function signIn(email, password) {
   }
 }
 
+/*
+|--------------------------------------------------------------------------
+| Sign Out
+|--------------------------------------------------------------------------
+*/
+
 async function signOut() {
   user.value = null
   profile.value = null
@@ -178,6 +271,12 @@ async function signOut() {
   localStorage.removeItem('mason_user')
   localStorage.removeItem('mason_profile')
 }
+
+/*
+|--------------------------------------------------------------------------
+| Update Profile
+|--------------------------------------------------------------------------
+*/
 
 async function updateProfile(updates) {
   if (!user.value) return
@@ -213,9 +312,21 @@ async function updateProfile(updates) {
   }
 }
 
+/*
+|--------------------------------------------------------------------------
+| Load Profile
+|--------------------------------------------------------------------------
+*/
+
 async function loadProfile() {
   return profile.value
 }
+
+/*
+|--------------------------------------------------------------------------
+| Export
+|--------------------------------------------------------------------------
+*/
 
 export function useAuth() {
   return {

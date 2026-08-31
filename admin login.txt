@@ -1,2 +1,9 @@
-Email: admin@maison.com
-Password: admin123
+Admin
+
+Email: jarryullah46@gmail.com
+Password: 123456
+
+User
+
+Email: hamza46@gmail.com
+Password: 123456

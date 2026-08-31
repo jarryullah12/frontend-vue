@@ -1,109 +1,348 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const sectionRef = ref(null)
+const showcaseRef = ref(null)
 
-onMounted(() => {
+const currentFrame = ref(0)
+let scrollTrigger = null
+
+/*
+|--------------------------------------------------------------------------
+| FRAME IMAGES
+|--------------------------------------------------------------------------
+*/
+
+const frames = [
+  '/video-frames/frames/frames%20%281%29.jfif',
+  '/video-frames/frames/frames%20%282%29.jfif',
+  '/video-frames/frames/frames%20%283%29.jfif',
+  '/video-frames/frames/frames%20%284%29.jfif',
+  '/video-frames/frames/frames%20%285%29.jfif',
+]
+
+/*
+|--------------------------------------------------------------------------
+| Mouse Hover → ONLY ONE NEXT FRAME
+|--------------------------------------------------------------------------
+*/
+
+const showNextFrame = () => {
+  currentFrame.value =
+    (currentFrame.value + 1) % frames.length
+}
+
+/*
+|--------------------------------------------------------------------------
+| Scroll To Section
+|--------------------------------------------------------------------------
+*/
+
+const scrollToSection = (sectionId) => {
+  const element = document.getElementById(sectionId)
+
+  if (!element) {
+    console.warn(`Section #${sectionId} not found`)
+    return
+  }
+
+  element.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start',
+  })
+}
+
+/*
+|--------------------------------------------------------------------------
+| Mounted
+|--------------------------------------------------------------------------
+*/
+
+onMounted(async () => {
+  await nextTick()
+
   const ctx = gsap.context(() => {
-    const layers = gsap.utils.toArray('.ps-layer')
 
-    layers.forEach((layer, i) => {
-      const depth = parseFloat(layer.dataset.depth || '0.2')
-      gsap.to(layer, {
-        yPercent: -depth * 100,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: sectionRef.value,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 1,
-        },
-      })
+    /*
+    |--------------------------------------------------------------------------
+    | Entrance Animation
+    |--------------------------------------------------------------------------
+    */
+
+    const tl = gsap.timeline({
+      delay: 0.3,
     })
 
-    gsap.to('.ps-rotate', {
-      rotation: 360,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: sectionRef.value,
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: 2,
-      },
-    })
-
-    gsap.from('.ps-text-line', {
-      y: 80,
+    tl.from('.showcase-eyebrow', {
+      y: 25,
       opacity: 0,
-      duration: 1,
-      stagger: 0.1,
+      duration: 0.8,
       ease: 'power3.out',
-      scrollTrigger: {
-        trigger: '.ps-text-block',
-        start: 'top 80%',
+    })
+
+      .from(
+        '.showcase-title',
+        {
+          y: 40,
+          opacity: 0,
+          duration: 1,
+          ease: 'power3.out',
+        },
+        '-=0.5'
+      )
+
+      .from(
+        '.showcase-description',
+        {
+          y: 30,
+          opacity: 0,
+          duration: 0.8,
+          ease: 'power3.out',
+        },
+        '-=0.6'
+      )
+
+      .from(
+        '.showcase-cta',
+        {
+          y: 20,
+          opacity: 0,
+          duration: 0.6,
+          ease: 'power3.out',
+        },
+        '-=0.4'
+      )
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scroll → ONE FRAME AT A TIME
+    |--------------------------------------------------------------------------
+    */
+
+    scrollTrigger = ScrollTrigger.create({
+      trigger: showcaseRef.value,
+
+      start: 'top top',
+
+      end: '+=100%',
+
+      pin: true,
+
+      pinSpacing: true,
+
+      scrub: 1,
+
+      anticipatePin: 1,
+
+      onUpdate: (self) => {
+
+        const frameIndex = Math.min(
+          frames.length - 1,
+          Math.floor(self.progress * frames.length)
+        )
+
+        currentFrame.value = frameIndex
       },
     })
 
-    gsap.from('.ps-image', {
-      scale: 1.4,
-      duration: 1.5,
-      ease: 'power3.out',
-      scrollTrigger: {
-        trigger: sectionRef.value,
-        start: 'top 70%',
-      },
-    })
-  }, sectionRef.value)
+  }, showcaseRef.value)
 
-  return () => ctx.revert()
+  setTimeout(() => {
+    ScrollTrigger.refresh()
+  }, 500)
+
+  return () => {
+    ctx.revert()
+  }
 })
 
+/*
+|--------------------------------------------------------------------------
+| Cleanup
+|--------------------------------------------------------------------------
+*/
+
 onUnmounted(() => {
-  ScrollTrigger.getAll().forEach((st) => st.kill())
+  if (scrollTrigger) {
+    scrollTrigger.kill()
+    scrollTrigger = null
+  }
 })
 </script>
 
 <template>
-  <section ref="sectionRef" class="relative h-[120vh] min-h-[800px] overflow-hidden bg-ink-950">
-    <div class="absolute inset-0 z-0 overflow-hidden">
+
+  <section
+    ref="showcaseRef"
+    class="relative h-screen min-h-[700px] w-full overflow-hidden bg-ink-950"
+    @mouseenter="showNextFrame"
+  >
+
+    <!-- =====================================================
+         BACKGROUND FRAMES
+    ====================================================== -->
+
+    <div class="absolute inset-0 z-0">
+
       <img
-        class="ps-image ps-layer absolute inset-0 w-full h-[130%] object-cover"
-        src="https://images.pexels.com/photos/262039/pexels-photo-262039.jpeg?auto=compress&cs=tinysrgb&h=1400&w=2000"
-        alt="Runway show"
-        data-depth="0.15"
+        v-for="(frame, index) in frames"
+        :key="frame"
+        :src="frame"
+        :alt="`Maison editorial frame ${index + 1}`"
+        class="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500"
+        :class="
+          currentFrame === index
+            ? 'opacity-100'
+            : 'opacity-0'
+        "
+        draggable="false"
       />
-      <div class="absolute inset-0 bg-ink-950/50"></div>
+
     </div>
 
-    <div class="ps-layer absolute top-[15%] left-[5%] md:left-[10%] z-10" data-depth="0.4">
-      <div class="ps-rotate w-20 h-20 md:w-32 md:h-32 border border-accent-500/40 rounded-full flex items-center justify-center">
-        <p class="font-sans text-[8px] md:text-[10px] tracking-[0.3em] uppercase text-accent-400 text-center leading-tight">Atelier<br/>Maison<br/>FW26</p>
-      </div>
-    </div>
 
-    <div class="ps-layer absolute bottom-[10%] right-[5%] md:right-[10%] z-10" data-depth="0.3">
-      <div class="font-display text-[15vw] md:text-[12vw] text-ink-50/10 leading-none">FW26</div>
-    </div>
+    <!-- =====================================================
+         CONTENT
+    ====================================================== -->
 
-    <div class="relative z-20 h-full flex items-center justify-center">
-      <div class="ps-text-block text-center px-6">
-        <p class="ps-text-line font-sans text-xs tracking-[0.4em] uppercase text-accent-400 mb-6">The Runway</p>
-        <h2 class="ps-text-line font-display text-6xl md:text-8xl lg:text-9xl text-ink-50 leading-[0.9] mb-4">
-          Where Form
-        </h2>
-        <h2 class="ps-text-line font-display italic font-light text-6xl md:text-8xl lg:text-9xl text-accent-400 leading-[0.9]">
-          Becomes Art
-        </h2>
-        <p class="ps-text-line mt-8 font-serif text-lg md:text-xl text-ink-200 max-w-xl mx-auto leading-relaxed">
-          Experience the runway — a choreography of silhouette, shadow, and movement.
+    <div
+      class="relative z-20 h-full flex items-center max-w-[1600px] mx-auto px-6 md:px-12"
+    >
+
+      <div class="w-full md:w-[52%] lg:w-[48%]">
+
+        <p
+          class="showcase-eyebrow font-sans text-xs tracking-[0.4em] uppercase text-accent-400 mb-6"
+        >
+          Maison / Philosophy
         </p>
+
+        <h2
+          class="showcase-title font-display text-5xl md:text-7xl lg:text-8xl leading-[0.9] tracking-tight text-ink-50"
+        >
+          Where Form
+          <br />
+
+          <span class="italic">
+            Becomes Art
+          </span>
+        </h2>
+
+        <p
+          class="showcase-description mt-8 font-serif text-lg md:text-xl text-ink-100 max-w-xl leading-relaxed"
+        >
+          Every silhouette is an exploration of proportion,
+          movement, and material — designed to exist beyond
+          the ordinary.
+        </p>
+
+        <div class="mt-10">
+
+          <button
+            @click.stop="scrollToSection('lookbook')"
+            class="showcase-cta group relative overflow-hidden px-8 py-4 border border-ink-300 text-ink-50 font-sans text-xs tracking-[0.2em] uppercase"
+          >
+
+            <span
+              class="relative z-10 group-hover:text-ink-950 transition-colors duration-400"
+            >
+              Discover The Lookbook
+            </span>
+
+            <div
+              class="absolute inset-0 bg-ink-50 translate-y-full group-hover:translate-y-0 transition-transform duration-400"
+            ></div>
+
+          </button>
+
+        </div>
+
       </div>
+
     </div>
 
-    <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-ink-950 to-transparent z-20"></div>
+
+    <!-- =====================================================
+         FRAME INDICATOR
+    ====================================================== -->
+
+    <div
+      class="absolute right-6 md:right-12 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-3"
+    >
+
+      <div
+        v-for="(frame, index) in frames"
+        :key="index"
+        class="w-px h-8 bg-ink-700/70 overflow-hidden"
+      >
+
+        <div
+          class="w-full bg-accent-500 transition-all duration-300"
+          :class="
+            currentFrame === index
+              ? 'h-full opacity-100'
+              : 'h-0 opacity-40'
+          "
+        ></div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SCROLL
+    ====================================================== -->
+
+    <button
+      @click.stop="scrollToSection('lookbook')"
+      type="button"
+      class="absolute bottom-10 left-6 md:left-12 z-30 flex items-center gap-3 cursor-pointer"
+      aria-label="Scroll to lookbook"
+    >
+
+      <svg
+        class="w-5 h-5 text-ink-200 animate-bounce"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1"
+          d="M19 14l-7 7m0 0l-7-7m7 7V3"
+        />
+
+      </svg>
+
+      <span
+        class="font-sans text-xs tracking-[0.2em] uppercase text-ink-200"
+      >
+        Scroll
+      </span>
+
+    </button>
+
+
+    <!-- =====================================================
+         EDITION
+    ====================================================== -->
+
+    <div
+      class="absolute bottom-10 right-6 md:right-12 z-30 hidden md:block"
+    >
+
+      <p class="font-serif italic text-ink-300 text-sm">
+        N° 02 — Maison
+      </p>
+
+    </div>
+
   </section>
+
 </template>

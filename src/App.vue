@@ -48,7 +48,9 @@ const onLoaderComplete = () => {
 }
 
 const navigate = (target) => {
-  // Admin Panel protection
+  // =========================
+  // Admin Panel Protection
+  // =========================
   if (target === 'admin') {
     if (!isAuthenticated.value || !isAdmin.value) {
       view.value = 'auth'
@@ -56,7 +58,9 @@ const navigate = (target) => {
     }
   }
 
-  // Account protection
+  // =========================
+  // Account Protection
+  // =========================
   if (target === 'account') {
     if (!isAuthenticated.value) {
       view.value = 'auth'
@@ -64,8 +68,12 @@ const navigate = (target) => {
     }
   }
 
+  // =========================
+  // Change View
+  // =========================
   view.value = target
 
+  // Scroll page to top
   window.scrollTo({
     top: 0,
     behavior: 'instant',
@@ -76,6 +84,7 @@ const navigate = (target) => {
   })
 }
 
+// Refresh ScrollTrigger whenever page/view changes
 watch(view, () => {
   nextTick(() => {
     ScrollTrigger.refresh()
@@ -84,11 +93,17 @@ watch(view, () => {
 
 onMounted(async () => {
   await init()
+
+  nextTick(() => {
+    ScrollTrigger.refresh()
+  })
 })
 </script>
 
 <template>
-  <div class="relative bg-ink-950 min-h-screen overflow-x-hidden">
+  <div
+    class="relative bg-ink-950 min-h-screen overflow-x-hidden"
+  >
 
     <!-- =========================
          NAVIGATION
@@ -168,21 +183,31 @@ onMounted(async () => {
          HOME PAGE
     ========================== -->
     <main v-else>
+
+      <!-- Custom Cursor -->
       <CustomCursor />
 
+      <!-- 1. Hero -->
       <Hero />
 
+      <!-- 2. Marquee -->
       <Marquee />
 
+      <!-- 3. Signature Pieces -->
       <Collection />
 
-      <Lookbook />
-
+      <!-- 4. Where Form Becomes Art -->
       <ParallaxShowcase />
 
+      <!-- 5. Lookbook -->
+      <Lookbook />
+
+      <!-- 6. Accessories -->
       <Accessories />
 
+      <!-- 7. Newsletter -->
       <Newsletter />
+
     </main>
 
     <!-- =========================
